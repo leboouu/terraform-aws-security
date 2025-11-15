@@ -17,6 +17,47 @@ The infrastructure includes:
 - AWS CLI configured with appropriate permissions
 - Prisma Cloud account and API credentials
 
+### Provider Credentials
+
+#### AWS Provider
+Configure AWS credentials using one of the following methods:
+
+1. **AWS CLI Configuration** (recommended):
+   ```bash
+   aws configure
+   ```
+
+2. **Environment Variables**:
+   ```bash
+   export AWS_ACCESS_KEY_ID="your-access-key"
+   export AWS_SECRET_ACCESS_KEY="your-secret-key"
+   export AWS_DEFAULT_REGION="us-east-1"
+   ```
+
+3. **Shared Credentials File** (`~/.aws/credentials`):
+   ```ini
+   [default]
+   aws_access_key_id = your-access-key
+   aws_secret_access_key = your-secret-key
+   region = us-east-1
+   ```
+
+#### Prisma Cloud Provider
+Obtain your Prisma Cloud credentials from the Prisma Cloud Console:
+
+1. Log in to your Prisma Cloud account
+2. Navigate to **Settings > Access Keys**
+3. Generate a new access key pair
+4. Set the credentials as environment variables:
+   ```bash
+   export PRISMA_ACCESS_KEY="your-prisma-access-key"
+   export PRISMA_SECRET_KEY="your-prisma-secret-key"
+   ```
+
+For the Prisma Cloud integration, you'll also need:
+- Your AWS Account ID (found in AWS Console under **My Account**)
+- An IAM user or role with appropriate permissions for Prisma Cloud to scan your AWS account
+
 ## Quick Start
 
 1. Clone the repository:
@@ -29,7 +70,15 @@ The infrastructure includes:
    ```hcl
    region = "us-east-1"
    db_password = "your-secure-password"
-   # Add other required variables
+
+   # Prisma Cloud credentials (if using Prisma Cloud integration)
+   prisma_access_key = "your-prisma-access-key"
+   prisma_secret_key = "your-prisma-secret-key"
+   aws_account_id = "123456789012"  # Your AWS Account ID
+   aws_access_key = "your-aws-access-key"  # For Prisma Cloud integration
+   aws_secret_key = "your-aws-secret-key"  # For Prisma Cloud integration
+
+   # Add other required variables as needed
    ```
 
 3. Initialize Terraform:

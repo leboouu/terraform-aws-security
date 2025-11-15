@@ -21,7 +21,7 @@ The infrastructure includes:
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/leboouu/terraform-aws-security.git<repository-url>
    cd terraform-aws-security
    ```
 

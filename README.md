@@ -1,14 +1,17 @@
 # Terraform AWS Security
 
-This repository contains Terraform configurations for deploying a secure AWS infrastructure with VPC, EKS cluster, RDS database, and Prisma Cloud integration for security monitoring.
+This repository contains Terraform configurations for deploying a comprehensive secure AWS infrastructure including VPC, EKS cluster, RDS database, Application Load Balancer with WAF, advanced security services, monitoring, and Prisma Cloud integration for security monitoring.
 
 ## Architecture
 
 The infrastructure includes:
 
-- **VPC**: Custom VPC with public and private subnets, NAT gateways, and internet gateway
-- **EKS**: Kubernetes cluster with managed node groups
-- **RDS**: PostgreSQL database with encryption and security groups
+- **VPC**: Custom VPC with public and private subnets, NAT gateways, internet gateway, and VPC flow logs
+- **EKS**: Kubernetes cluster with managed node groups, encryption, and IAM roles
+- **RDS**: PostgreSQL database with encryption, security groups, and enhanced monitoring
+- **ALB**: Application Load Balancer with WAF protection, access logs, and cross-zone load balancing
+- **Security Services**: GuardDuty, CloudTrail, AWS Config, KMS encryption, and Secrets Manager
+- **Monitoring**: CloudWatch alarms, log groups, and SNS alerts for security and operational notifications
 - **Prisma Cloud**: Cloud security platform integration for AWS account monitoring and policies
 
 ## Prerequisites
@@ -111,29 +114,53 @@ Creates a VPC with:
 - Internet Gateway
 - NAT Gateways for private subnet internet access
 - Route tables and associations
+- VPC flow logs for network monitoring
 
 ### EKS Module (`modules/eks/`)
 
 Deploys an EKS cluster with:
 - Managed Kubernetes control plane
-- IAM roles for cluster and nodes
+- IAM roles for cluster and nodes with IRSA support
 - Security groups
 - Node groups with configurable instance types and scaling
+- Cluster and node encryption using KMS
+- CloudWatch logging for control plane
 
 ### RDS Module (`modules/rds/`)
 
 Sets up a PostgreSQL database with:
 - DB subnet group
 - Security group with restricted access
-- Storage encryption
+- Storage encryption using KMS
 - Backup configuration
 - Multi-AZ deployment option
+- Enhanced monitoring with CloudWatch
+- Performance Insights
+
+### ALB Module (`modules/ALB/`)
+
+Deploys an Application Load Balancer with:
+- WAF v2 Web ACL with rate limiting, managed rules, and geo-blocking
+- Access logs stored in S3
+- Cross-zone load balancing
+- Deletion protection for production environments
+- HTTP/2 support
+
+### Security Module (`security/`)
+
+Provides comprehensive security services:
+- **GuardDuty**: Threat detection and monitoring
+- **CloudTrail**: API activity logging with CloudWatch integration and alerts
+- **AWS Config**: Resource configuration monitoring with compliance rules
+- **KMS**: Encryption keys for EKS, RDS, CloudWatch, SNS, and Secrets Manager
+- **Secrets Manager**: Secure storage for database credentials
 
 ### Prisma Cloud Integration (`prisma-cloud/`)
 
 Integrates AWS account with Prisma Cloud for:
 - Cloud account onboarding
 - Security policies and compliance monitoring
+- Custom policy creation and management
 
 ## Configuration
 
@@ -147,6 +174,12 @@ Key variables to configure:
 - `db_name`: Name of the RDS database
 - `db_username`: Database username
 - `db_password`: Database password (sensitive)
+- `enable_guardduty`: Enable AWS GuardDuty (default: true)
+- `enable_cloudtrail`: Enable AWS CloudTrail (default: true)
+- `enable_config`: Enable AWS Config (default: true)
+- `enable_waf`: Enable WAF for ALB (default: true)
+- `security_team_email`: Email for security alerts
+- `ops_team_email`: Email for operational alerts
 
 ### Outputs
 
@@ -154,14 +187,22 @@ The configuration provides outputs for:
 - VPC details (ID, subnets, gateways)
 - EKS cluster endpoint and configuration
 - RDS database endpoint and connection details
+- ALB DNS name and ARN
+- Security service IDs (GuardDuty detector, CloudTrail name, etc.)
+- KMS key ARNs for various services
+- SNS topic ARN for alerts
 
 ## Security Features
 
-- VPC isolation with private subnets
-- Security groups restricting access
-- RDS storage encryption
-- IAM roles with least privilege
-- Prisma Cloud security monitoring
+- **Network Security**: VPC isolation with private subnets, security groups, and NACLs
+- **Encryption**: KMS encryption for EKS, RDS, CloudWatch logs, SNS, and Secrets Manager
+- **Access Control**: IAM roles with least privilege, IRSA for EKS service accounts
+- **Threat Detection**: GuardDuty for continuous threat monitoring
+- **Audit Logging**: CloudTrail with CloudWatch alerts for root account usage
+- **Compliance Monitoring**: AWS Config rules for resource compliance
+- **Web Application Security**: WAF with rate limiting, managed rules, and geo-blocking
+- **Secrets Management**: Secure storage of database credentials in Secrets Manager
+- **Prisma Cloud Integration**: Advanced security monitoring and policy enforcement
 
 ## Deployment Scripts
 
@@ -174,6 +215,22 @@ Make the scripts executable:
 ```bash
 chmod +x scripts/deploy.sh scripts/destroy.sh
 ```
+
+## Monitoring and Alerts
+
+The infrastructure includes comprehensive monitoring and alerting:
+
+- **CloudWatch Alarms**: CPU/memory utilization for EKS, RDS connections, and CloudTrail root usage
+- **SNS Topics**: Email notifications for security and operational alerts
+- **CloudWatch Logs**: Centralized logging for applications, CloudTrail, and VPC flow logs
+- **Enhanced Monitoring**: Detailed metrics for RDS and EKS clusters
+
+## Cost Optimization
+
+- Spot instances support for EKS node groups
+- Auto-scaling based on resource utilization
+- Lifecycle policies for S3 buckets (ALB logs, CloudTrail logs)
+- Configurable instance types and storage sizes
 
 ## Cleanup
 

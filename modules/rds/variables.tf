@@ -1,73 +1,142 @@
-variable "db_name" {
-  description = "The name of the database"
+# ============================================================================
+# MODULES/RDS/variables.tf
+# ============================================================================
+
+variable "project_name" {
+  description = "Nom du projet"
   type        = string
 }
 
-variable "db_username" {
-  description = "The username for the database"
+variable "environment" {
+  description = "Environnement"
   type        = string
 }
 
-variable "db_password" {
-  description = "The password for the database"
+variable "vpc_id" {
+  description = "ID du VPC"
   type        = string
-  sensitive   = true
 }
 
-variable "instance_class" {
-  description = "The instance class for the RDS instance"
-  type        = string
-  default     = "db.t3.micro"
+variable "subnet_ids" {
+  description = "IDs des subnets pour RDS"
+  type        = list(string)
+}
+
+variable "allowed_cidr_blocks" {
+  description = "CIDR blocks autorisés à accéder à RDS"
+  type        = list(string)
+  default     = []
+}
+
+variable "allowed_security_groups" {
+  description = "Security groups autorisés à accéder à RDS"
+  type        = list(string)
+  default     = []
 }
 
 variable "engine" {
-  description = "The database engine"
+  description = "Moteur de base de données"
   type        = string
   default     = "postgres"
 }
 
 variable "engine_version" {
-  description = "The database engine version"
+  description = "Version du moteur"
   type        = string
-  default     = "13.7"
+}
+
+variable "instance_class" {
+  description = "Classe d'instance RDS"
+  type        = string
 }
 
 variable "allocated_storage" {
-  description = "The allocated storage in GB"
+  description = "Stockage alloué (GB)"
   type        = number
-  default     = 20
 }
 
-variable "subnet_ids" {
-  description = "List of subnet IDs for the DB subnet group"
-  type        = list(string)
+variable "max_allocated_storage" {
+  description = "Stockage maximum pour auto-scaling"
+  type        = number
 }
 
-variable "vpc_id" {
-  description = "The VPC ID where the RDS instance will be created"
+variable "database_name" {
+  description = "Nom de la base de données"
   type        = string
 }
 
-variable "kms_key_id" {
-  description = "The KMS key ID for encryption"
+variable "master_username" {
+  description = "Nom d'utilisateur master"
   type        = string
-  default     = null
 }
 
 variable "backup_retention_period" {
-  description = "The number of days to retain backups"
+  description = "Période de rétention des backups"
   type        = number
-  default     = 7
+}
+
+variable "backup_window" {
+  description = "Fenêtre de backup"
+  type        = string
+}
+
+variable "maintenance_window" {
+  description = "Fenêtre de maintenance"
+  type        = string
 }
 
 variable "multi_az" {
-  description = "Whether to enable Multi-AZ deployment"
+  description = "Activer multi-AZ"
+  type        = bool
+}
+
+variable "deletion_protection" {
+  description = "Protection contre la suppression"
+  type        = bool
+}
+
+variable "skip_final_snapshot" {
+  description = "Ignorer le snapshot final"
+  type        = bool
+}
+
+variable "enabled_cloudwatch_logs_exports" {
+  description = "Types de logs à exporter vers CloudWatch"
+  type        = list(string)
+  default     = []
+}
+
+variable "storage_encrypted" {
+  description = "Activer le chiffrement du stockage"
+  type        = bool
+  default     = true
+}
+
+variable "kms_key_id" {
+  description = "ARN de la clé KMS"
+  type        = string
+}
+
+variable "performance_insights_enabled" {
+  description = "Activer Performance Insights"
   type        = bool
   default     = false
 }
 
-variable "storage_encrypted" {
-  description = "Whether to encrypt the storage"
-  type        = bool
-  default     = true
+variable "monitoring_interval" {
+  description = "Intervalle de monitoring (secondes)"
+  type        = number
+  default     = 0
+}
+
+variable "monitoring_role_arn" {
+  description = "ARN du rôle IAM pour le monitoring"
+  type        = string
+  default     = null
+}
+
+variable "common_tags" {
+  description = "Tags communs"
+  type        = map(string)
+  default     = {}
 }

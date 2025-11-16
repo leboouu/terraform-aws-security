@@ -24,47 +24,27 @@ provider "aws" {
   }
 }
 
-provider "kubernetes" {
-  host                   = module.eks.cluster_endpoint
-  cluster_ca_certificate = base64decode(module.eks.cluster_ca_certificate)
+data "aws_eks_cluster" "cluster" {
+  name = module.eks.cluster_name
+}
 
-  exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
-    command     = "aws"
-    args = [
-      "eks",
-      "get-token",
-      "--cluster-name",
-      module.eks.cluster_name,
-      "--region",
-      var.aws_region
-    ]
-  }
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks.cluster_name
+}
+
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.cluster.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
 }
 
 provider "helm" {
   kubernetes {
-    host                   = module.eks.cluster_endpoint
-    cluster_ca_certificate = base64decode(module.eks.cluster_ca_certificate)
-
-    exec {
-      api_version = "client.authentication.k8s.io/v1beta1"
-      command     = "aws"
-      args = [
-        "eks",
-        "get-token",
-        "--cluster-name",
-        module.eks.cluster_name,
-        "--region",
-        var.aws_region
-      ]
-    }
+    host                   = data.aws_eks_cluster.cluster.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
+    token                  = data.aws_eks_cluster_auth.cluster.token
   }
 }
-
-# ============================================================================
-# DATA SOURCES
-# ============================================================================
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
@@ -255,9 +235,6 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 module "alb" {
   source = "./modules/alb"
 
-  project_name = var.project_name
-  environment  = var.environment
-
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.public_subnet_ids
 
@@ -269,22 +246,9 @@ module "alb" {
   access_logs_bucket  = aws_s3_bucket.alb_logs.id
   access_logs_prefix  = "alb"
 
-  security_group_ingress_rules = {
-    http = {
-      from_port   = 80
-      to_port     = 80
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      description = "Allow HTTP from anywhere"
-    }
-    https = {
-      from_port   = 443
-      to_port     = 443
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      description = "Allow HTTPS from anywhere"
-    }
-  }
+  # security_group_ingress_rules removed because the alb module does not accept this attribute.
+  # Define ALB security group rules inside the modules/alb implementation or add a module variable
+  # to pass custom rules if needed.
 
   common_tags = local.common_tags
 

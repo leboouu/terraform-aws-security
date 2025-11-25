@@ -255,3 +255,29 @@ Or use the destroy script:
 ## License
 
 This project is licensed under the MIT License.
+
+## Cloudflare Module
+
+This project includes a Cloudflare module to manage DNS records and other Cloudflare resources.
+
+### Usage
+
+Set the following variables in your terraform.tfvars or environment:
+- `cloudflare_zone_name`: your Cloudflare zone domain name
+- `cloudflare_api_token`: your Cloudflare API token with appropriate permissions
+
+The module is declared in main.tf and manages an example DNS A record (`example` with IP 192.0.2.1) as a starting point.
+
+You can customize the module by editing the files in `modules/cloudflare`.
+
+### Variables
+
+- `cloudflare_zone_name` (string): Cloudflare zone (domain) to manage
+- `cloudflare_api_token` (string, sensitive): API token for Cloudflare provider
+- `common_tags` (map[string]): Tags applied to all resources
+
+### Outputs
+
+- `example_record_id`: ID of the example DNS record
+- `example_record_name`: Name of the example DNS record
+

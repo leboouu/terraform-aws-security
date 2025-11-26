@@ -57,3 +57,5 @@ aws-credentials.txt
 
 # Ignore kubectl config
 kubeconfig*
+.env
+*.env

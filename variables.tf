@@ -371,7 +371,7 @@ variable "prisma_cloud_secret_key" {
 # CLOUDFLARE CONFIGURATION
 # ============================================================================
 
-variable "cloudflare_zone_name" {
+variable "cloudflare_zone" {
   description = "Nom de la zone Cloudflare"
   type        = string
 }

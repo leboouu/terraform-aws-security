@@ -232,8 +232,8 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 # ALB MODULE
 # ============================================================================
 
-module "ALB" {
-  source  = "terraform-aws-modules/alb/aws"
+module "alb" {
+  source  = "./modules/alb"
   version = "~> 8.0"
 
   name    = "${var.project_name}-${var.environment}-alb"
@@ -242,7 +242,7 @@ module "ALB" {
   internal           = false
   
   vpc_id  = module.vpc.vpc_id
-  subnets = module.vpc.public_subnets  # Utiliser public_subnets, pas public_subnet_ids
+  subnets = module.vpc.public_subnets_ids  # Utiliser public_subnets, pas public_subnet_ids
   
   # Security groups
   security_groups = [aws_security_group.alb.id]
@@ -332,11 +332,14 @@ resource "aws_s3_bucket_lifecycle_configuration" "alb_logs" {
   bucket = aws_s3_bucket.alb_logs.id
 
   rule {
-    id     = "delete-old-logs"
+    id     = "alb_logs_lifecycle"
     status = "Enabled"
 
+    prefix = "logs/"  # Replace with your desired prefix, e.g., for ALB logs
+
+    # Add other rule attributes as needed (e.g., expiration, transitions)
     expiration {
-      days = 90
+      days = 30
     }
   }
 }

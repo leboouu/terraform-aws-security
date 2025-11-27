@@ -16,6 +16,7 @@ resource "cloudflare_record" "example" {
   proxied = false
 }
 
-data "cloudflare_zone" "zone" {
-  name = var.zone_name
-}
+data "cloudflare_zones" "zone" {
+    name = var.zone_name  # Replace with a variable for the zone name
+  }
+

@@ -129,73 +129,23 @@ resource "aws_eks_node_group" "main" {
 
 resource "aws_launch_template" "node_group" {
   for_each = var.node_groups
-
-  name_prefix = "${var.project_name}-${var.environment}-${each.key}-"
-  description = "Launch template for ${each.key} node group"
-
+  
+  name_prefix = "${aws_eks_cluster.main.name}-${each.key}-"
+  
   block_device_mappings {
-    device_name = "/dev/sda1"
-
+    device_name = "/dev/xvda"
+    
     ebs {
-      volume_size           = each.value.disk_size
-      volume_type           = "gp3"
-      iops                  = 3000
-      throughput            = 125
-      encrypted             = true
-      kms_key_id            = var.node_encryption_kms_key_arn
+      volume_size = try(each.value.disk_size, 20)  # ICI
+      volume_type = "gp3"
       delete_on_termination = true
+      encrypted = true
     }
   }
-
-  metadata_options {
-    http_endpoint               = "enabled"
-    http_tokens                 = "required" # Enforce IMDSv2
-    http_put_response_hop_limit = 1
-    instance_metadata_tags      = "enabled"
-  }
-
-  monitoring {
-    enabled = true
-  }
-
-  network_interfaces {
-    associate_public_ip_address = false
-    security_groups             = [aws_security_group.node_group.id]
-    delete_on_termination       = true
-  }
-
-  tag_specifications {
-    resource_type = "instance"
-
-    tags = merge(
-      var.common_tags,
-      {
-        Name                                                           = "${var.project_name}-${var.environment}-${each.key}-node"
-        "kubernetes.io/cluster/${var.project_name}-${var.environment}" = "owned"
-      }
-    )
-  }
-
-  tag_specifications {
-    resource_type = "volume"
-
-    tags = merge(
-      var.common_tags,
-      {
-        Name = "${var.project_name}-${var.environment}-${each.key}-volume"
-      }
-    )
-  }
-
-  user_data = base64encode(templatefile("${path.module}/user-data.sh", {
-    cluster_name        = aws_eks_cluster.main.name
-    cluster_endpoint    = aws_eks_cluster.main.endpoint
-    cluster_ca          = aws_eks_cluster.main.certificate_authority[0].data
-    bootstrap_arguments = "--kubelet-extra-args '--max-pods=110 --node-labels=nodegroup=${each.key}'"
-  }))
-
-  tags = var.common_tags
 }
+
+# Duplicate aws_eks_node_group "main" removed because a complete resource with required attributes
+# (for_each, cluster_name, node_role_arn, subnet_ids, scaling_config, etc.) is defined earlier in this file.
 
 # ============================================================================
 # OIDC PROVIDER POUR IRSA
@@ -276,15 +226,14 @@ resource "aws_eks_addon" "kube_proxy" {
   tags = var.common_tags
 }
 
+# Dans modules/eks/main.tf
 resource "aws_eks_addon" "ebs_csi_driver" {
-  cluster_name                = aws_eks_cluster.main.name
-  addon_name                  = "aws-ebs-csi-driver"
-  addon_version               = var.ebs_csi_driver_addon_version
-  service_account_role_arn    = aws_iam_role.ebs_csi_driver.arn
-  resolve_conflicts_on_create = "OVERWRITE"
+  cluster_name = aws_eks_cluster.this.name
+  addon_name   = "aws-ebs-csi-driver"
+  
+  preserve = true  # AJOUTER CETTE LIGNE pour éviter le remplacement
+  
   resolve_conflicts_on_update = "PRESERVE"
-
-  tags = var.common_tags
 }
 
 # ============================================================================

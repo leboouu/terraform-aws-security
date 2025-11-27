@@ -4,20 +4,47 @@
 
 # KMS Key for EKS
 resource "aws_kms_key" "eks" {
-  description = "KMS key for EKS"
+  description             = "KMS key for EKS"
+  deletion_window_in_days = 10
+  enable_key_rotation     = true
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
+        Sid    = "Enable IAM User Permissions"
         Effect = "Allow"
         Principal = {
-          Service = "logs.amazonaws.com"
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         }
         Action   = "kms:*"
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow EKS to use the key"
+        Effect = "Allow"
+        Principal = {
+          Service = "eks.amazonaws.com"
+        }
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:CreateGrant",
+          "kms:DescribeKey"
+        ]
         Resource = "*"
       }
     ]
   })
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${var.project_name}-${var.environment}-eks-kms"
+    }
+  )
 }
 
 resource "aws_kms_alias" "eks" {
@@ -103,6 +130,18 @@ resource "aws_kms_key" "cloudwatch" {
             "kms:EncryptionContext:aws:logs:arn" = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"
           }
         }
+      },
+      {
+        Sid    = "Allow CloudTrail to use the key"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudtrail.amazonaws.com"
+        }
+        Action = [
+          "kms:GenerateDataKey*",
+          "kms:Decrypt"
+        ]
+        Resource = "*"
       }
     ]
   })
@@ -176,6 +215,33 @@ resource "aws_kms_key" "guardduty" {
   deletion_window_in_days = 10
   enable_key_rotation     = true
 
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "Enable IAM User Permissions"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow GuardDuty to use the key"
+        Effect = "Allow"
+        Principal = {
+          Service = "guardduty.amazonaws.com"
+        }
+        Action = [
+          "kms:GenerateDataKey*",
+          "kms:Decrypt"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
   tags = merge(
     var.common_tags,
     {
@@ -192,8 +258,8 @@ resource "aws_kms_alias" "guardduty" {
 }
 
 # Data sources needed
-##data "aws_caller_identity" "current" {}
-##data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
 
 # KMS Key for CloudTrail
 resource "aws_kms_key" "cloudtrail" {

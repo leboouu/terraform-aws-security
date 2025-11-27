@@ -234,7 +234,6 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 
 module "alb" {
   source  = "./modules/alb"
-  version = "~> 8.0"
 
   name    = "${var.project_name}-${var.environment}-alb"
   

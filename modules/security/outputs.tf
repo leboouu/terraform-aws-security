@@ -70,7 +70,3 @@ output "kms_key_cloudwatch_arn" {
   value       = var.enable_cloudtrail ? aws_kms_key.cloudwatch[0].arn : null
 }
 
-output "kms_key_cloudwatch_arn" {
-  description = "The ARN of the KMS key for CloudWatch"
-  value       = aws_kms_key.cloudwatch.arn  # Retirez le conditionnel
-}

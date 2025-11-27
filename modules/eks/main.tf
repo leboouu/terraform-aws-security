@@ -226,14 +226,15 @@ resource "aws_eks_addon" "kube_proxy" {
   tags = var.common_tags
 }
 
-# Dans modules/eks/main.tf
 resource "aws_eks_addon" "ebs_csi_driver" {
-  cluster_name = aws_eks_cluster.this.name
-  addon_name   = "aws-ebs-csi-driver"
-  
-  preserve = true  # AJOUTER CETTE LIGNE pour éviter le remplacement
-  
+  cluster_name                = aws_eks_cluster.main.name
+  addon_name                  = "aws-ebs-csi-driver"
+  addon_version               = var.ebs_csi_driver_addon_version
+  service_account_role_arn    = aws_iam_role.ebs_csi_driver.arn
+  resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "PRESERVE"
+
+  tags = var.common_tags
 }
 
 # ============================================================================

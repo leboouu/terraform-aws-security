@@ -9,6 +9,7 @@
 variable "project_name" {
   description = "Nom du projet - utilisé pour le prefixe des ressources"
   type        = string
+  default     = "secure-cloud"
   validation {
     condition     = can(regex("^[a-z0-9-]+$", var.project_name))
     error_message = "Le nom du projet doit contenir uniquement des minuscules, chiffres et tirets"
@@ -18,6 +19,7 @@ variable "project_name" {
 variable "environment" {
   description = "Environnement de déploiement"
   type        = string
+  default     = "prod"
   validation {
     condition     = contains(["dev", "staging", "production"], var.environment)
     error_message = "L'environnement doit être dev, staging ou production"
@@ -46,7 +48,7 @@ variable "cost_center" {
 variable "aws_region" {
   description = "Région AWS pour le déploiement"
   type        = string
-  default     = "eu-west-1"
+  default     = "us-east-2"
   
   validation {
     condition = contains([
@@ -60,7 +62,7 @@ variable "aws_region" {
 variable "aws_profile" {
   description = "Profil AWS CLI à utiliser"
   type        = string
-  default     = "default"
+  default     = "clouud-security"
 }
 
 # ============================================================================

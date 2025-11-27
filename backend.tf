@@ -1,49 +1,53 @@
-# ============================================================================
 # backend.tf
-# ============================================================================
+# Configuration complète du backend S3
 
 terraform {
   backend "s3" {
-    # Configuration backend S3 pour state file
-    # À configurer selon votre environnement
+    # Configuration du bucket
+    bucket = "amzn-s3-terraform-b"
+    key    = "terraform.tfstate"
+    region = "us-east-2"
     
-    # bucket         = "terraform-state-secure-app-ACCOUNT_ID"
-    # key            = "prod/terraform.tfstate"
-    # region         = "eu-west-1"
-    # encrypt        = true
-    # dynamodb_table = "terraform-state-lock"
-    # kms_key_id     = "arn:aws:kms:eu-west-1:ACCOUNT_ID:key/KEY_ID"
+    # Sécurité
+    encrypt = true
     
-    # Tags pour le bucket S3 (à créer manuellement)
-    # Tags:
-    #   Name        = "Terraform State"
-    #   Environment = "Production"
-    #   Purpose     = "State Management"
+    # Verrouillage d'état avec DynamoDB (empêche les modifications concurrentes)
+    # Créez d'abord la table DynamoDB avec:
+    # aws dynamodb create-table \
+    #   --table-name terraform-state-lock \
+    #   --attribute-definitions AttributeName=LockID,AttributeType=S \
+    #   --key-schema AttributeName=LockID,KeyType=HASH \
+    #   --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+    dynamodb_table = "terraform-state-lock"
+    
+    # Options additionnelles
+    skip_credentials_validation = false
+    skip_metadata_api_check     = false
+    force_path_style            = false
   }
 }
 
-# Script pour créer le backend S3
-# aws s3api create-bucket \
-#   --bucket terraform-state-secure-app-$(aws sts get-caller-identity --query Account --output text) \
-#   --region eu-west-1 \
-#   --create-bucket-configuration LocationConstraint=eu-west-1
+# ===================================
+# Organisation par environnement
+# ===================================
 
-# aws s3api put-bucket-versioning \
-#   --bucket terraform-state-secure-app-$(aws sts get-caller-identity --query Account --output text) \
-#   --versioning-configuration Status=Enabled
+# Pour dev:
+# key = "env:/dev/terraform.tfstate"
 
-# aws s3api put-bucket-encryption \
-#   --bucket terraform-state-secure-app-$(aws sts get-caller-identity --query Account --output text) \
-#   --server-side-encryption-configuration '{
-#     "Rules": [{
-#       "ApplyServerSideEncryptionByDefault": {
-#         "SSEAlgorithm": "aws:kms"
-#       }
-#     }]
-#   }'
+# Pour staging:
+# key = "env:/staging/terraform.tfstate"
 
-# aws dynamodb create-table \
-#   --table-name terraform-state-lock \
-#   --attribute-definitions AttributeName=LockID,AttributeType=S \
-#   --key-schema AttributeName=LockID,KeyType=HASH \
-#   --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+# Pour production:
+# key = "env:/prod/terraform.tfstate"
+
+# ===================================
+# Configuration avec workspaces
+# ===================================
+
+# Si vous utilisez terraform workspace, Terraform créera automatiquement:
+# s3://bucket/env:/workspace-name/terraform.tfstate
+
+# Exemples:
+# - workspace "dev"     → env:/dev/terraform.tfstate
+# - workspace "staging" → env:/staging/terraform.tfstate
+# - workspace "prod"    → env:/prod/terraform.tfstate

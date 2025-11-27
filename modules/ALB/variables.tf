@@ -72,3 +72,9 @@ variable "alb_arn" {
   type        = string
   default     = null  # Rendre optionnelle
 }
+
+variable "enable_deletion_protection" {
+  description = "Enable deletion protection for ALB"
+  type        = bool
+  default     = false
+}

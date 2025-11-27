@@ -37,12 +37,13 @@ output "kms_key_secrets_arn" {
   value       = aws_kms_key.secrets.arn
 }
 
-output "kms_key_cloudwatch_arn" {
-  description = "The ARN of the KMS key for CloudWatch"
-  value       = var.enable_cloudtrail ? aws_kms_key.cloudwatch[0].arn : null
-}
 
 output "kms_key_sns_arn" {
   description = "The ARN of the KMS key for SNS"
   value       = aws_kms_key.sns.arn
+}
+
+output "kms_key_cloudtrail_arn" {
+  description = "The ARN of the KMS key for CloudTrail"
+  value       = var.enable_cloudtrail ? aws_kms_key.cloudtrail[0].arn : null
 }

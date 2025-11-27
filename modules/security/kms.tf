@@ -190,3 +190,67 @@ resource "aws_kms_alias" "guardduty" {
 # Data sources needed
 ##data "aws_caller_identity" "current" {}
 ##data "aws_region" "current" {}
+
+# KMS Key for CloudTrail
+resource "aws_kms_key" "cloudtrail" {
+  count = var.enable_cloudtrail ? 1 : 0
+
+  description             = "KMS key for CloudTrail encryption"
+  deletion_window_in_days = 10
+  enable_key_rotation     = true
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "Enable IAM User Permissions"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow CloudTrail to encrypt logs"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudtrail.amazonaws.com"
+        }
+        Action = [
+          "kms:GenerateDataKey*",
+          "kms:DecryptDataKey"
+        ]
+        Resource = "*"
+        Condition = {
+          StringLike = {
+            "kms:EncryptionContext:aws:cloudtrail:arn" = "arn:aws:cloudtrail:*:${data.aws_caller_identity.current.account_id}:trail/*"
+          }
+        }
+      },
+      {
+        Sid    = "Allow CloudTrail to describe key"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudtrail.amazonaws.com"
+        }
+        Action   = "kms:DescribeKey"
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${var.project_name}-${var.environment}-cloudtrail-kms"
+    }
+  )
+}
+
+resource "aws_kms_alias" "cloudtrail" {
+  count = var.enable_cloudtrail ? 1 : 0
+
+  name          = "alias/${var.project_name}-${var.environment}-cloudtrail"
+  target_key_id = aws_kms_key.cloudtrail[0].key_id
+}

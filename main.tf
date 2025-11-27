@@ -24,28 +24,6 @@ provider "aws" {
   }
 }
 
-data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_name
-}
-
-data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_name
-}
-
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.cluster.token
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = data.aws_eks_cluster.cluster.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
-    token                  = data.aws_eks_cluster_auth.cluster.token
-  }
-}
-
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 data "aws_availability_zones" "available" {
@@ -150,6 +128,28 @@ module "eks" {
   common_tags = local.common_tags
 
   depends_on = [module.vpc]
+}
+
+data "aws_eks_cluster" "cluster" {
+  name = module.eks.cluster_name
+}
+
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks.cluster_name
+}
+
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.cluster.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = data.aws_eks_cluster.cluster.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
+    token                  = data.aws_eks_cluster_auth.cluster.token
+  }
 }
 
 # ============================================================================
@@ -315,8 +315,6 @@ module "security" {
   project_name = var.project_name
   environment  = var.environment
 
-  vpc_id = module.vpc.vpc_id
-
   enable_guardduty    = var.enable_guardduty
   enable_cloudtrail   = var.enable_cloudtrail
   enable_config       = var.enable_config
@@ -327,8 +325,6 @@ module "security" {
 
   security_alerts_email = var.security_team_email
   ops_alerts_email      = var.ops_team_email
-
-  eks_cluster_name = module.eks.cluster_name
 
   common_tags = local.common_tags
 }

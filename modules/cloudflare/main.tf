@@ -17,6 +17,7 @@ resource "cloudflare_record" "example" {
 }
 
 data "cloudflare_zones" "zone" {
-    name = var.zone_name  # Replace with a variable for the zone name
+  filter {
+    name = var.zone_name
   }
-
+}

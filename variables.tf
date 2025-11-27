@@ -371,13 +371,14 @@ variable "prisma_cloud_secret_key" {
 # CLOUDFLARE CONFIGURATION
 # ============================================================================
 
-variable "cloudflare_zone" {
-  description = "Nom de la zone Cloudflare"
+variable "cloudflare_zone_name" {
+  description = "Cloudflare zone name"
   type        = string
+  default     = ""  # ou supprimez le module cloudflare si non utilisé
 }
 
 variable "cloudflare_api_token" {
-  description = "Token API Cloudflare"
+  description = "Cloudflare API token"
   type        = string
   sensitive   = true
   default     = ""

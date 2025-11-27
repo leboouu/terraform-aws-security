@@ -292,107 +292,37 @@ resource "aws_eks_addon" "ebs_csi_driver" {
 # ============================================================================
 
 resource "helm_release" "cluster_autoscaler" {
-  count = var.enable_cluster_autoscaler ? 1 : 0
-
+  # Helm release for Cluster Autoscaler
   name       = "cluster-autoscaler"
   repository = "https://kubernetes.github.io/autoscaler"
   chart      = "cluster-autoscaler"
   namespace  = "kube-system"
-  version    = "9.29.3"
+  create_namespace = false
 
-  set = [
-    {
-      name  = "autoDiscovery.clusterName"
-      value = aws_eks_cluster.main.name
-    },
-    {
-      name  = "awsRegion"
-      value = data.aws_region.current.name
-    },
-    {
-      name  = "rbac.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-      value = aws_iam_role.cluster_autoscaler[0].arn
-    }
-  ]
+  # Configure values via individual set blocks
+  set {
+    name  = "autoDiscovery.clusterName"
+    value = aws_eks_cluster.main.name
+  }
+
+  set {
+    name  = "awsRegion"
+    value = data.aws_region.current.name
+  }
+
+  # Ensure RBAC and cloud-provider integration options are set as strings
+  set {
+    name  = "rbac.create"
+    value = "true"
+  }
+
+  set {
+    name  = "awsUseStaticInstanceList"
+    value = "false"
+  }
 
   depends_on = [aws_eks_node_group.main]
 }
-
-# IAM Role pour Cluster Autoscaler
-resource "aws_iam_role" "cluster_autoscaler" {
-  count = var.enable_cluster_autoscaler ? 1 : 0
-
-  name = "${var.project_name}-${var.environment}-cluster-autoscaler"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Federated = aws_iam_openid_connect_provider.eks[0].arn
-        }
-        Action = "sts:AssumeRoleWithWebIdentity"
-        Condition = {
-          StringEquals = {
-            "${replace(aws_eks_cluster.main.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:kube-system:cluster-autoscaler"
-          }
-        }
-      }
-    ]
-  })
-
-  tags = var.common_tags
-}
-
-resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
-  count = var.enable_cluster_autoscaler ? 1 : 0
-
-  policy_arn = aws_iam_policy.cluster_autoscaler[0].arn
-  role       = aws_iam_role.cluster_autoscaler[0].name
-}
-
-resource "aws_iam_policy" "cluster_autoscaler" {
-  count = var.enable_cluster_autoscaler ? 1 : 0
-
-  name = "${var.project_name}-${var.environment}-cluster-autoscaler-policy"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "autoscaling:DescribeAutoScalingGroups",
-          "autoscaling:DescribeAutoScalingInstances",
-          "autoscaling:DescribeLaunchConfigurations",
-          "autoscaling:DescribeScalingActivities",
-          "autoscaling:DescribeTags",
-          "ec2:DescribeImages",
-          "ec2:DescribeInstanceTypes",
-          "ec2:DescribeLaunchTemplateVersions",
-          "ec2:GetInstanceTypesFromInstanceRequirements",
-          "eks:DescribeNodegroup"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "autoscaling:SetDesiredCapacity",
-          "autoscaling:TerminateInstanceInAutoScalingGroup"
-        ]
-        Resource = "*"
-        Condition = {
-          StringEquals = {
-            "autoscaling:ResourceTag/kubernetes.io/cluster/${aws_eks_cluster.main.name}" = "owned"
-          }
-        }
-      }
-    ]
-  })
-}
-
 # ============================================================================
 # METRICS SERVER
 # ============================================================================

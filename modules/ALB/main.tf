@@ -16,7 +16,7 @@ resource "aws_lb_target_group" "this" {
   protocol = var.target_groups[count.index].protocol
   port     = var.target_groups[count.index].port
   target_type      = var.target_groups[count.index].target_type
-  vpc_id           = var.vpc_id
+
 
   health_check {
     enabled             = var.target_groups[count.index].health_check.enabled

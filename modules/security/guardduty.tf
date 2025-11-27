@@ -1,7 +1,7 @@
 # ============================================================================
 # MODULES/SECURITY/guardduty.tf
 # ============================================================================
-
+data "aws_caller_identity" "current" {}
 resource "aws_guardduty_detector" "main" {
   count  = var.enable_guardduty ? 1 : 0
   enable = true

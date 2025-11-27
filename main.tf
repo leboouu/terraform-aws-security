@@ -245,8 +245,8 @@ module "alb" {
   target_groups = [
     {
       name_prefix      = "tg-"
-      protocol         = "HTTP"
-      port             = 80
+      backend_protocol = "HTTP"  # Ajouté
+      backend_port     = 80      # Ajouté
       target_type      = "ip"
       health_check = {
         enabled             = true
@@ -331,9 +331,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "alb_logs" {
     id     = "alb_logs_lifecycle"
     status = "Enabled"
 
-    prefix = "logs/"  # Replace with your desired prefix, e.g., for ALB logs
+    filter {
+      prefix = "logs/"
+    }
 
-    # Add other rule attributes as needed (e.g., expiration, transitions)
     expiration {
       days = 30
     }

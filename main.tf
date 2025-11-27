@@ -233,20 +233,14 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 # ============================================================================
 
 module "alb" {
-  source  = "./modules/alb"
+  source = "./modules/alb"
 
-  name    = "${var.project_name}-${var.environment}-alb"
-  
-  load_balancer_type = "application"
-  internal           = false
-  
-  vpc_id  = module.vpc.vpc_id
-  subnets = module.vpc.public_subnets_ids  # Utiliser public_subnet_ids
-  
-  # Security groups
+  environment     = var.environment
+  project_name    = var.project_name
+  vpc_id          = module.vpc.vpc_id
+  subnet_ids      = module.vpc.public_subnet_ids  # Fixed: Was "subnets" (unsupported) and "public_subnets_ids" (typo)
   security_groups = [aws_security_group.alb.id]
-  
-  # Target groups
+
   target_groups = [
     {
       name_prefix      = "tg-"
@@ -266,8 +260,7 @@ module "alb" {
       }
     }
   ]
-  
-  # HTTP listener
+
   http_tcp_listeners = [
     {
       port               = 80
@@ -275,13 +268,12 @@ module "alb" {
       target_group_index = 0
     }
   ]
-  
+
   tags = {
     Name        = "${var.project_name}-alb"
     Environment = var.environment
   }
 }
-
 # Security Group pour l'ALB
 resource "aws_security_group" "alb" {
   name_prefix = "${var.project_name}-alb-"

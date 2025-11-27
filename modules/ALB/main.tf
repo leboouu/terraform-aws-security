@@ -1,29 +1,15 @@
-resource "aws_lb" "main" {
-  name               = var.name
-  load_balancer_type = var.load_balancer_type
-  internal           = var.internal
+resource "aws_lb" "this" {
+  name               = "${var.project_name}-${var.environment}-alb"
+  load_balancer_type = "application"
+  internal           = false
   vpc_id             = var.vpc_id
   subnets            = var.subnet_ids
   security_groups    = var.security_groups
 
-  enable_deletion_protection       = var.enable_deletion_protection
-  enable_cross_zone_load_balancing = var.enable_cross_zone_load_balancing
-  enable_http2                     = var.enable_http2
-
-  dynamic "access_logs" {
-    for_each = var.access_logs_enabled ? [1] : []
-    content {
-      bucket  = var.access_logs_bucket
-      prefix  = var.access_logs_prefix
-      enabled = var.access_logs_enabled
-    }
-  }
-
-  tags = var.common_tags
+  tags = var.tags
 }
 
-# Target Groups
-resource "aws_lb_target_group" "main" {
+resource "aws_lb_target_group" "this" {
   count = length(var.target_groups)
 
   name_prefix      = var.target_groups[count.index].name_prefix
@@ -47,16 +33,15 @@ resource "aws_lb_target_group" "main" {
   tags = var.tags
 }
 
-# Listeners
 resource "aws_lb_listener" "http_tcp" {
   count = length(var.http_tcp_listeners)
 
-  load_balancer_arn = aws_lb.main.arn
+  load_balancer_arn = aws_lb.this.arn
   port              = var.http_tcp_listeners[count.index].port
   protocol          = var.http_tcp_listeners[count.index].protocol
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.main[var.http_tcp_listeners[count.index].target_group_index].arn
+    target_group_arn = aws_lb_target_group.this[var.http_tcp_listeners[count.index].target_group_index].arn
   }
 }

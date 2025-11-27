@@ -258,8 +258,8 @@ resource "aws_kms_alias" "guardduty" {
 }
 
 # Data sources needed
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
+#data "aws_caller_identity" "current" {}
+##data "aws_region" "current" {}
 
 # KMS Key for CloudTrail
 resource "aws_kms_key" "cloudtrail" {

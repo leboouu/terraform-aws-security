@@ -20,10 +20,6 @@ variable "waf_log_destination_arn" {
   default     = null
 }
 
-variable "alb_arn" {
-  description = "ARN of the ALB to associate with WAF"
-  type        = string
-}
 
 variable "common_tags" {
   description = "Common tags to apply to resources"

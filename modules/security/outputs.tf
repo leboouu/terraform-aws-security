@@ -47,3 +47,30 @@ output "kms_key_cloudtrail_arn" {
   description = "The ARN of the KMS key for CloudTrail"
   value       = var.enable_cloudtrail ? aws_kms_key.cloudtrail[0].arn : null
 }
+
+# Ajoutez ces outputs dans modules/security/outputs.tf
+
+output "cloudtrail_name" {
+  description = "The name of the CloudTrail trail"
+  value       = var.enable_cloudtrail ? aws_cloudtrail.main[0].name : null
+}
+
+output "cloudtrail_s3_bucket" {
+  description = "The S3 bucket name for CloudTrail logs"
+  value       = var.enable_cloudtrail ? aws_s3_bucket.cloudtrail[0].id : null
+}
+
+output "sns_topic_arn" {
+  description = "The ARN of the security alerts SNS topic"
+  value       = aws_sns_topic.security_alerts.arn
+}
+
+output "kms_key_cloudwatch_arn" {
+  description = "The ARN of the KMS key for CloudWatch"
+  value       = var.enable_cloudtrail ? aws_kms_key.cloudwatch[0].arn : null
+}
+
+output "kms_key_cloudwatch_arn" {
+  description = "The ARN of the KMS key for CloudWatch"
+  value       = aws_kms_key.cloudwatch.arn  # Retirez le conditionnel
+}

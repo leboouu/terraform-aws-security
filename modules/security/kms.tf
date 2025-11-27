@@ -254,3 +254,24 @@ resource "aws_kms_alias" "cloudtrail" {
   name          = "alias/${var.project_name}-${var.environment}-cloudtrail"
   target_key_id = aws_kms_key.cloudtrail[0].key_id
 }
+
+# Changez de:
+resource "aws_kms_key" "cloudwatch" {
+  count = var.enable_cloudtrail ? 1 : 0
+  # ...
+}
+
+# À:
+resource "aws_kms_key" "cloudwatch" {
+  # Retirez le count pour toujours créer cette clé
+  description             = "KMS key for CloudWatch Logs encryption"
+  deletion_window_in_days = 10
+  enable_key_rotation     = true
+  # ... reste du code
+}
+
+# Et mettez à jour l'alias:
+resource "aws_kms_alias" "cloudwatch" {
+  name          = "alias/${var.project_name}-${var.environment}-cloudwatch"
+  target_key_id = aws_kms_key.cloudwatch.key_id  # Retirez [0]
+}

@@ -235,17 +235,45 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 module "alb" {
   source = "./modules/alb"
 
+  name            = "${var.project_name}-${var.environment}-alb"
   environment     = var.environment
   project_name    = var.project_name
   vpc_id          = module.vpc.vpc_id
-  subnet_ids      = module.vpc.public_subnet_ids  # Ensure this matches your VPC module's output
+  subnet_ids      = module.vpc.public_subnet_ids  # Confirm this output exists in VPC module
+  security_groups = [aws_security_group.alb.id]
 
-  # Note: the local ./modules/alb implementation does not accept `target_groups`
-  # or `http_tcp_listeners` attributes; create aws_lb_target_group and
-  # aws_lb_listener resources separately or add corresponding variables/logic
-  # to the module to pass them through.
+  target_groups = [
+    {
+      name_prefix      = "tg-"
+      protocol = "HTTP"
+      port     = 80
+      target_type      = "ip"
+      health_check = {
+        enabled             = true
+        interval            = 30
+        path                = "/"
+        port                = "traffic-port"
+        healthy_threshold   = 3
+        unhealthy_threshold = 3
+        timeout             = 6
+        protocol            = "HTTP"
+        matcher             = "200-299"
+      }
+    }
+  ]
 
-  common_tags = local.common_tags
+  http_tcp_listeners = [
+    {
+      port               = 80
+      protocol           = "HTTP"
+      target_group_index = 0
+    }
+  ]
+
+  tags = {
+    Name        = "${var.project_name}-alb"
+    Environment = var.environment
+  }
 }
 # Security Group pour l'ALB
 resource "aws_security_group" "alb" {

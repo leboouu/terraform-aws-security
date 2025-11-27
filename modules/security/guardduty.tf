@@ -1,7 +1,9 @@
 # ============================================================================
 # MODULES/SECURITY/guardduty.tf
 # ============================================================================
+# Data sources
 data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}  # AJOUTEZ CETTE LIGNE
 resource "aws_guardduty_detector" "main" {
   count  = var.enable_guardduty ? 1 : 0
   enable = true
@@ -84,20 +86,25 @@ resource "aws_s3_bucket_public_access_block" "guardduty_findings" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "guardduty_findings" {
-  count  = var.enable_guardduty ? 1 : 0
+  count = var.enable_guardduty ? 1 : 0
+
   bucket = aws_s3_bucket.guardduty_findings[0].id
-  
+
   rule {
-    id     = "archive-findings"
+    id     = "guardduty_findings_lifecycle"
     status = "Enabled"
-    
+
+    filter {
+      prefix = "findings/"
+    }
+
     transition {
       days          = 90
       storage_class = "GLACIER"
     }
-    
+
     expiration {
-      days = 2555
+      days = 365
     }
   }
 }

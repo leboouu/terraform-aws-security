@@ -242,7 +242,6 @@ module "alb" {
   subnet_ids      = module.vpc.public_subnet_ids
   security_groups = [aws_security_group.alb.id]
 
-  # Configuration des target groups
   target_groups = [
     {
       name_prefix      = "tg-"
@@ -263,7 +262,6 @@ module "alb" {
     }
   ]
 
-  # Configuration des listeners
   http_tcp_listeners = [
     {
       port               = 80
@@ -271,15 +269,6 @@ module "alb" {
       target_group_index = 0
     }
   ]
-
-  # Configuration des logs ALB
-  enable_deletion_protection = var.environment == "prod" ? true : false
-  
-  access_logs = {
-    enabled = true
-    bucket  = aws_s3_bucket.alb_logs.id
-    prefix  = "logs"
-  }
 
   tags = merge(
     local.common_tags,

@@ -256,10 +256,4 @@ resource "aws_kms_alias" "cloudtrail" {
 }
 
 
-resource "aws_kms_key" "cloudwatch" {
-  # Retirez le count pour toujours créer cette clé
-  description             = "KMS key for CloudWatch Logs encryption"
-  deletion_window_in_days = 10
-  enable_key_rotation     = true
-  # ... reste du code
-}
+

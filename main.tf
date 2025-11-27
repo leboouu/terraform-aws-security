@@ -242,7 +242,7 @@ module "alb" {
   internal           = false
   
   vpc_id  = module.vpc.vpc_id
-  subnets = module.vpc.public_subnets_ids  # Utiliser public_subnets, pas public_subnet_ids
+  subnets = module.vpc.public_subnets_ids  # Utiliser public_subnet_ids
   
   # Security groups
   security_groups = [aws_security_group.alb.id]

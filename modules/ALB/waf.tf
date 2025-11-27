@@ -2,6 +2,45 @@
 # MODULES/ALB/waf.tf
 # ============================================================================
 
+variable "enable_waf" {
+  description = "Enable or disable WAF and related resources"
+  type        = bool
+  default     = false
+}
+
+variable "waf_blocked_countries" {
+  description = "List of country codes to block"
+  type        = list(string)
+  default     = []
+}
+
+variable "waf_log_destination_arn" {
+  description = "ARN of the destination for WAF logs"
+  type        = string
+  default     = null
+}
+
+variable "alb_arn" {
+  description = "ARN of the ALB to associate with WAF"
+  type        = string
+}
+
+variable "project_name" {
+  description = "Project name"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment name"
+  type        = string
+}
+
+variable "common_tags" {
+  description = "Common tags to apply to resources"
+  type        = map(string)
+  default     = {}
+}
+
 # ============================================================================
 # WAF WEB ACL
 # ============================================================================
@@ -138,15 +177,10 @@ resource "aws_wafv2_web_acl" "main" {
   
   tags = var.common_tags
 }
-
-# ============================================================================
-# WAF ASSOCIATION
-# ============================================================================
-
 resource "aws_wafv2_web_acl_association" "main" {
   count = var.enable_waf ? 1 : 0
   
-  resource_arn = aws_lb.main.arn
+  resource_arn = var.alb_arn
   web_acl_arn  = aws_wafv2_web_acl.main[0].arn
 }
 

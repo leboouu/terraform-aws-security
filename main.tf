@@ -238,36 +238,14 @@ module "alb" {
   environment     = var.environment
   project_name    = var.project_name
   vpc_id          = module.vpc.vpc_id
-  subnet_ids      = module.vpc.public_subnet_ids  # Fixed: Was "subnets" (unsupported) and "public_subnets_ids" (typo)
-  security_groups = [aws_security_group.alb.id]
+  subnet_ids      = module.vpc.public_subnet_ids  # Ensure this matches your VPC module's output
 
-  target_groups = [
-    {
-      name_prefix      = "tg-"
-      backend_protocol = "HTTP"
-      backend_port     = 80
-      target_type      = "ip"
-      health_check = {
-        enabled             = true
-        interval            = 30
-        path                = "/"
-        port                = "traffic-port"
-        healthy_threshold   = 3
-        unhealthy_threshold = 3
-        timeout             = 6
-        protocol            = "HTTP"
-        matcher             = "200-299"
-      }
-    }
-  ]
+  # Note: the local ./modules/alb implementation does not accept `target_groups`
+  # or `http_tcp_listeners` attributes; create aws_lb_target_group and
+  # aws_lb_listener resources separately or add corresponding variables/logic
+  # to the module to pass them through.
 
-  http_tcp_listeners = [
-    {
-      port               = 80
-      protocol           = "HTTP"
-      target_group_index = 0
-    }
-  ]
+  common_tags = local.common_tags
 }
 # Security Group pour l'ALB
 resource "aws_security_group" "alb" {

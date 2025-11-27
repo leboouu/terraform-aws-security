@@ -80,11 +80,11 @@ output "configure_kubectl" {
 # RDS OUTPUTS
 # ============================================================================
 
-output "rds_endpoint" {
-  description = "Endpoint de la base de données RDS"
-  value       = module.rds.db_instance_endpoint
-  sensitive   = true
-}
+#output "rds_endpoint" {
+  #description = "Endpoint de la base de données RDS"
+  #value       = module.rds.db_instance_endpoint
+ # sensitive   = true
+#}
 
 output "rds_database_name" {
   description = "Nom de la base de données"

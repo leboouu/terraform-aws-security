@@ -328,20 +328,20 @@ resource "helm_release" "cluster_autoscaler" {
 # ============================================================================
 
 resource "helm_release" "metrics_server" {
-  count = var.enable_metrics_server ? 1 : 0
-
   name       = "metrics-server"
   repository = "https://kubernetes-sigs.github.io/metrics-server/"
   chart      = "metrics-server"
   namespace  = "kube-system"
   version    = "3.11.0"
 
-  set = [
-    {
-      name  = "args[0]"
-      value = "--kubelet-preferred-address-types=InternalIP"
-    }
-  ]
+  # Remplacez set = [...] par des blocs set individuels :
+  set {
+    name  = "args[0]"
+    value = "--kubelet-insecure-tls"
+  }
 
-  depends_on = [aws_eks_node_group.main]
+  set {
+    name  = "args[1]"
+    value = "--kubelet-preferred-address-types=InternalIP"
+  }
 }

@@ -46,20 +46,25 @@ resource "aws_s3_bucket" "cloudtrail" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "cloudtrail" {
-  count  = var.enable_cloudtrail ? 1 : 0
+  count = var.enable_cloudtrail ? 1 : 0
+
   bucket = aws_s3_bucket.cloudtrail[0].id
-  
+
   rule {
-    id     = "archive-old-logs"
+    id     = "cloudtrail_logs_lifecycle"
     status = "Enabled"
-    
+
+    filter {
+      prefix = "logs/"
+    }
+
     transition {
       days          = 90
       storage_class = "GLACIER"
     }
-    
+
     expiration {
-      days = 2555
+      days = 365
     }
   }
 }
@@ -111,11 +116,11 @@ resource "aws_s3_bucket_policy" "cloudtrail" {
 # CloudWatch Log Group pour CloudTrail
 resource "aws_cloudwatch_log_group" "cloudtrail" {
   count = var.enable_cloudtrail ? 1 : 0
-  
+
   name              = "/aws/cloudtrail/${var.project_name}-${var.environment}"
   retention_in_days = 90
-  kms_key_id        = aws_kms_key.cloudwatch.arn
-  
+  kms_key_id        = aws_kms_key.cloudwatch[0].arn  # Ajouté [0]
+
   tags = var.common_tags
 }
 

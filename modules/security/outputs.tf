@@ -1,53 +1,48 @@
 # ============================================================================
-# MODULES/SECURITY/outputs.tf
+# Security Module Outputs
 # ============================================================================
 
 output "guardduty_detector_id" {
-  description = "ID du detector GuardDuty"
+  description = "The ID of the GuardDuty detector"
   value       = var.enable_guardduty ? aws_guardduty_detector.main[0].id : null
 }
 
-output "cloudtrail_name" {
-  description = "Nom du trail CloudTrail"
-  value       = var.enable_cloudtrail ? aws_cloudtrail.main[0].name : null
+output "cloudtrail_arn" {
+  description = "The ARN of the CloudTrail trail"
+  value       = var.enable_cloudtrail ? aws_cloudtrail.main[0].arn : null
 }
 
-output "cloudtrail_s3_bucket" {
-  description = "Bucket S3 pour CloudTrail"
-  value       = var.enable_cloudtrail ? aws_s3_bucket.cloudtrail[0].id : null
+output "config_recorder_id" {
+  description = "The ID of the AWS Config recorder"
+  value       = var.enable_config ? aws_config_configuration_recorder.main[0].id : null
 }
 
 output "security_hub_arn" {
-  description = "ID du compte Security Hub"
+  description = "The ARN of Security Hub"
   value       = var.enable_security_hub ? aws_securityhub_account.main[0].id : null
 }
 
 output "kms_key_eks_arn" {
-  description = "ARN de la clé KMS pour EKS"
+  description = "The ARN of the KMS key for EKS"
   value       = aws_kms_key.eks.arn
 }
 
 output "kms_key_rds_arn" {
-  description = "ARN de la clé KMS pour RDS"
+  description = "The ARN of the KMS key for RDS"
   value       = aws_kms_key.rds.arn
 }
 
 output "kms_key_secrets_arn" {
-  description = "ARN de la clé KMS pour Secrets Manager"
+  description = "The ARN of the KMS key for Secrets Manager"
   value       = aws_kms_key.secrets.arn
 }
 
 output "kms_key_cloudwatch_arn" {
-  description = "ARN de la clé KMS pour CloudWatch"
-  value       = aws_kms_key.cloudwatch.arn
+  description = "The ARN of the KMS key for CloudWatch"
+  value       = var.enable_cloudtrail ? aws_kms_key.cloudwatch[0].arn : null
 }
 
 output "kms_key_sns_arn" {
-  description = "ARN de la clé KMS pour SNS"
+  description = "The ARN of the KMS key for SNS"
   value       = aws_kms_key.sns.arn
-}
-
-output "sns_topic_arn" {
-  description = "ARN du topic SNS pour alertes"
-  value       = aws_sns_topic.security_alerts.arn
 }

@@ -555,15 +555,15 @@ output "rds_endpoint" {
 }
 
 # Cloudflare provider configuration
-provider "cloudflare" {
-  api_token = var.cloudflare_api_token
-}
+# provider "cloudflare" {
+#   api_token = var.cloudflare_api_token
+# }
 
 # Cloudflare module
-module "cloudflare" {
-  source = "./modules/cloudflare"
+# module "cloudflare" {
+#   source = "./modules/cloudflare"
 
-  zone_name  = var.cloudflare_zone_name
-  common_tags = local.common_tags
-}
+#   zone_name  = var.cloudflare_zone_name
+#   common_tags = local.common_tags
+# }
 

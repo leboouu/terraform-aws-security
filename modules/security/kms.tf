@@ -163,6 +163,11 @@ resource "aws_kms_key" "cloudwatch" {
           "kms:Decrypt"
         ]
         Resource = "*"
+        Condition = {
+          ArnLike = {
+            "kms:EncryptionContext:aws:logs:arn" = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"
+          }
+        }
       }
     ]
   })

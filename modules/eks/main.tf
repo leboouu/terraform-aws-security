@@ -134,7 +134,7 @@ resource "aws_launch_template" "node_group" {
   description = "Launch template for ${each.key} node group"
 
   block_device_mappings {
-    device_name = "/dev/xvda"
+    device_name = "/dev/sda1"
 
     ebs {
       volume_size           = each.value.disk_size
@@ -281,7 +281,7 @@ resource "aws_eks_addon" "ebs_csi_driver" {
   addon_name                  = "aws-ebs-csi-driver"
   addon_version               = var.ebs_csi_driver_addon_version
   service_account_role_arn    = aws_iam_role.ebs_csi_driver.arn
-  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_create = "PRESERVE"
   resolve_conflicts_on_update = "PRESERVE"
 
   tags = var.common_tags

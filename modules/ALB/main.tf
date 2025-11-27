@@ -12,10 +12,10 @@ resource "aws_lb" "this" {
 resource "aws_lb_target_group" "this" {
   count = length(var.target_groups)
 
-  name_prefix      = var.target_groups[count.index].name_prefix
-  backend_protocol = var.target_groups[count.index].backend_protocol
-  backend_port     = var.target_groups[count.index].backend_port
-  target_type      = var.target_groups[count.index].target_type
+  name_prefix = var.target_groups[count.index].name_prefix
+  protocol    = var.target_groups[count.index].backend_protocol
+  port        = var.target_groups[count.index].backend_port
+  target_type = var.target_groups[count.index].target_type
   vpc_id           = var.vpc_id
 
   health_check {

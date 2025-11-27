@@ -34,7 +34,7 @@ resource "aws_cloudtrail" "main" {
 
   tags = var.common_tags
 
-  depends_on = [aws_s3_bucket_policy.cloudtrail]
+  depends_on = [aws_s3_bucket_policy.cloudtrail, aws_cloudwatch_log_group.cloudtrail]
 }
 
 # S3 Bucket pour CloudTrail

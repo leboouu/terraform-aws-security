@@ -65,3 +65,10 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+# Dans ./modules/alb/variables.tf
+variable "alb_arn" {
+  description = "ARN of existing ALB (optional)"
+  type        = string
+  default     = null  # Rendre optionnelle
+}

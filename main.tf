@@ -239,14 +239,15 @@ module "alb" {
   environment     = var.environment
   project_name    = var.project_name
   vpc_id          = module.vpc.vpc_id
-  subnet_ids      = module.vpc.public_subnet_ids  # Confirm this output exists in VPC module
+  subnet_ids      = module.vpc.public_subnet_ids
   security_groups = [aws_security_group.alb.id]
 
+  # Configuration des target groups
   target_groups = [
     {
       name_prefix      = "tg-"
-      protocol = "HTTP"
-      port     = 80
+      protocol         = "HTTP"
+      port             = 80
       target_type      = "ip"
       health_check = {
         enabled             = true
@@ -262,6 +263,7 @@ module "alb" {
     }
   ]
 
+  # Configuration des listeners
   http_tcp_listeners = [
     {
       port               = 80
@@ -270,10 +272,23 @@ module "alb" {
     }
   ]
 
-  tags = {
-    Name        = "${var.project_name}-alb"
-    Environment = var.environment
+  # Configuration des logs ALB
+  enable_deletion_protection = var.environment == "production" ? true : false
+  
+  access_logs = {
+    enabled = true
+    bucket  = aws_s3_bucket.alb_logs.id
+    prefix  = "logs"
   }
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${var.project_name}-alb"
+    }
+  )
+
+  depends_on = [module.vpc]
 }
 # Security Group pour l'ALB
 resource "aws_security_group" "alb" {

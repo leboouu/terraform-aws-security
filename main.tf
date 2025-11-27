@@ -130,12 +130,17 @@ module "eks" {
   depends_on = [module.vpc]
 }
 
+# Remplacez les data sources EKS par :
 data "aws_eks_cluster" "cluster" {
   name = module.eks.cluster_name
+  
+  depends_on = [module.eks]
 }
 
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_name
+  
+  depends_on = [module.eks]
 }
 
 provider "kubernetes" {
@@ -541,11 +546,15 @@ output "deployment_summary" {
     region           = local.region
     vpc_id           = module.vpc.vpc_id
     eks_cluster_name = module.eks.cluster_name
-    rds_endpoint     = module.rds.db_instance_endpoint
     alb_dns_name     = module.alb.dns_name
   }
 }
 
+output "rds_endpoint" {
+  description = "RDS endpoint (sensitive)"
+  value       = module.rds.db_instance_endpoint
+  sensitive   = true
+}
 
 # Cloudflare provider configuration
 provider "cloudflare" {

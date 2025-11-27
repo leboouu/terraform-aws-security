@@ -273,7 +273,7 @@ module "alb" {
   ]
 
   # Configuration des logs ALB
-  enable_deletion_protection = var.environment == "production" ? true : false
+  enable_deletion_protection = var.environment == "prod" ? true : false
   
   access_logs = {
     enabled = true

@@ -268,11 +268,6 @@ module "alb" {
       target_group_index = 0
     }
   ]
-
-  tags = {
-    Name        = "${var.project_name}-alb"
-    Environment = var.environment
-  }
 }
 # Security Group pour l'ALB
 resource "aws_security_group" "alb" {

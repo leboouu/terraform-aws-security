@@ -291,57 +291,57 @@ resource "aws_eks_addon" "ebs_csi_driver" {
 # CLUSTER AUTOSCALER (OPTIONNEL)
 # ============================================================================
 
-resource "helm_release" "cluster_autoscaler" {
-  # Helm release for Cluster Autoscaler
-  name       = "cluster-autoscaler"
-  repository = "https://kubernetes.github.io/autoscaler"
-  chart      = "cluster-autoscaler"
-  namespace  = "kube-system"
-  create_namespace = false
-
-  # Configure values via individual set blocks
-  set {
-    name  = "autoDiscovery.clusterName"
-    value = aws_eks_cluster.main.name
-  }
-
-  set {
-    name  = "awsRegion"
-    value = data.aws_region.current.name
-  }
-
-  # Ensure RBAC and cloud-provider integration options are set as strings
-  set {
-    name  = "rbac.create"
-    value = "true"
-  }
-
-  set {
-    name  = "awsUseStaticInstanceList"
-    value = "false"
-  }
-
-  depends_on = [aws_eks_node_group.main]
-}
-# ============================================================================
-# METRICS SERVER
-# ============================================================================
-
-resource "helm_release" "metrics_server" {
-  name       = "metrics-server"
-  repository = "https://kubernetes-sigs.github.io/metrics-server/"
-  chart      = "metrics-server"
-  namespace  = "kube-system"
-  version    = "3.11.0"
-
-  # Remplacez set = [...] par des blocs set individuels :
-  set {
-    name  = "args[0]"
-    value = "--kubelet-insecure-tls"
-  }
-
-  set {
-    name  = "args[1]"
-    value = "--kubelet-preferred-address-types=InternalIP"
-  }
-}
+# # # resource "helm_release" "cluster_autoscaler" {
+# # #   # Helm release for Cluster Autoscaler
+# # #   name       = "cluster-autoscaler"
+# # #   repository = "https://kubernetes.github.io/autoscaler"
+# # #   chart      = "cluster-autoscaler"
+# # #   namespace  = "kube-system"
+# # #   create_namespace = false
+# # # 
+# # #   # Configure values via individual set blocks
+# # #   set {
+# # #     name  = "autoDiscovery.clusterName"
+# # #     value = aws_eks_cluster.main.name
+# # #   }
+# # # 
+# # #   set {
+# # #     name  = "awsRegion"
+# # #     value = data.aws_region.current.name
+# # #   }
+# # # 
+# # #   # Ensure RBAC and cloud-provider integration options are set as strings
+# # #   set {
+# # #     name  = "rbac.create"
+# # #     value = "true"
+# # #   }
+# # # 
+# # #   set {
+# # #     name  = "awsUseStaticInstanceList"
+# # #     value = "false"
+# # #   }
+# # # 
+# # #   depends_on = [aws_eks_node_group.main]
+# # # }
+# # # ============================================================================
+# # # METRICS SERVER
+# # # ============================================================================
+# # 
+# # # resource "helm_release" "metrics_server" {
+# # #   name       = "metrics-server"
+# # #   repository = "https://kubernetes-sigs.github.io/metrics-server/"
+# # #   chart      = "metrics-server"
+# # #   namespace  = "kube-system"
+# # #   version    = "3.11.0"
+# # # 
+# # #   # Remplacez set = [...] par des blocs set individuels :
+# # #   set {
+# # #     name  = "args[0]"
+# # #     value = "--kubelet-insecure-tls"
+# # #   }
+# # # 
+# # #   set {
+# # #     name  = "args[1]"
+# # #     value = "--kubelet-preferred-address-types=InternalIP"
+# # #   }
+# # # }

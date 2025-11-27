@@ -4,16 +4,20 @@
 
 # KMS Key for EKS
 resource "aws_kms_key" "eks" {
-  description             = "KMS key for EKS cluster encryption"
-  deletion_window_in_days = 10
-  enable_key_rotation     = true
-
-  tags = merge(
-    var.common_tags,
-    {
-      Name = "${var.project_name}-${var.environment}-eks-kms"
-    }
-  )
+  description = "KMS key for EKS"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "logs.amazonaws.com"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      }
+    ]
+  })
 }
 
 resource "aws_kms_alias" "eks" {

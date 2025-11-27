@@ -232,28 +232,36 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 # ALB MODULE
 # ============================================================================
 
-module "alb" {
-  source = "./modules/alb"
-
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.public_subnet_ids
-
-  enable_deletion_protection = var.environment == "production"
-  enable_http2              = true
-  enable_cross_zone_load_balancing = true
-
-  access_logs_enabled = true
-  access_logs_bucket  = aws_s3_bucket.alb_logs.id
-  access_logs_prefix  = "alb"
-
-  # security_group_ingress_rules removed because the alb module does not accept this attribute.
-  # Define ALB security group rules inside the modules/alb implementation or add a module variable
-  # to pass custom rules if needed.
-
-  common_tags = local.common_tags
-
-  depends_on = [module.vpc]
-
+module "ALB" {
+  source = "./modules/ALB"  # ou le chemin correct vers votre module
+  
+  # Arguments requis
+  project_name = var.project_name
+  environment  = var.environment
+  
+  # Arguments typiques pour un ALB
+  vpc_id              = module.vpc.vpc_id
+  public_subnet_ids   = module.vpc.public_subnet_ids
+  certificate_arn     = var.certificate_arn  # Si vous utilisez HTTPS
+  
+  # Configuration supplémentaire
+  alb_name            = "${var.project_name}-${var.environment}-alb"
+  internal            = false
+  enable_deletion_protection = false
+  
+  # Security groups
+  allowed_cidr_blocks = ["0.0.0.0/0"]  # À restreindre en production
+  
+  # Health check (si applicable)
+  health_check_path   = "/health"
+  health_check_port   = 80
+  
+  # Tags
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-alb"
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
 }
 # S3 Bucket for ALB logs
 resource "aws_s3_bucket" "alb_logs" {

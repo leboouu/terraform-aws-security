@@ -233,34 +233,92 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 # ============================================================================
 
 module "ALB" {
-  source = "./modules/ALB"  # ou le chemin correct vers votre module
+  source  = "terraform-aws-modules/alb/aws"
+  version = "~> 8.0"
+
+  name    = "${var.project_name}-${var.environment}-alb"
   
-  # Arguments requis
-  project_name = var.project_name
-  environment  = var.environment
+  load_balancer_type = "application"
+  internal           = false
   
-  # Arguments typiques pour un ALB
-  vpc_id              = module.vpc.vpc_id
-  public_subnet_ids   = module.vpc.public_subnet_ids
-  certificate_arn     = var.certificate_arn  # Si vous utilisez HTTPS
-  
-  # Configuration supplémentaire
-  alb_name            = "${var.project_name}-${var.environment}-alb"
-  internal            = false
-  enable_deletion_protection = false
+  vpc_id  = module.vpc.vpc_id
+  subnets = module.vpc.public_subnets  # Utiliser public_subnets, pas public_subnet_ids
   
   # Security groups
-  allowed_cidr_blocks = ["0.0.0.0/0"]  # À restreindre en production
+  security_groups = [aws_security_group.alb.id]
   
-  # Health check (si applicable)
-  health_check_path   = "/health"
-  health_check_port   = 80
+  # Target groups
+  target_groups = [
+    {
+      name_prefix      = "tg-"
+      backend_protocol = "HTTP"
+      backend_port     = 80
+      target_type      = "ip"
+      health_check = {
+        enabled             = true
+        interval            = 30
+        path                = "/"
+        port                = "traffic-port"
+        healthy_threshold   = 3
+        unhealthy_threshold = 3
+        timeout             = 6
+        protocol            = "HTTP"
+        matcher             = "200-299"
+      }
+    }
+  ]
   
-  # Tags
+  # HTTP listener
+  http_tcp_listeners = [
+    {
+      port               = 80
+      protocol           = "HTTP"
+      target_group_index = 0
+    }
+  ]
+  
   tags = {
-    Name        = "${var.project_name}-${var.environment}-alb"
+    Name        = "${var.project_name}-alb"
     Environment = var.environment
-    ManagedBy   = "Terraform"
+  }
+}
+
+# Security Group pour l'ALB
+resource "aws_security_group" "alb" {
+  name_prefix = "${var.project_name}-alb-"
+  description = "Security group for Application Load Balancer"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # À restreindre en production
+    description = "Allow HTTP from anywhere"
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow HTTPS from anywhere"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
+  }
+
+  tags = {
+    Name = "${var.project_name}-alb-sg"
+  }
+  
+  lifecycle {
+    create_before_destroy = true
   }
 }
 # S3 Bucket for ALB logs

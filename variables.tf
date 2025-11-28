@@ -204,27 +204,10 @@ variable "eks_cluster_log_types" {
   default     = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 }
 
-# In terraform.tfvars or wherever you define node_groups
-# In modules/eks/variables.tf around line 31
 variable "node_groups" {
-  description = "Map of EKS node group configurations"
-  type = map(object({
-    instance_type  = string
-    instance_types = list(string)
-    desired_size   = number
-    min_size       = number
-    max_size       = number
-    capacity_type  = string
-    disk_size      = number
-    labels         = map(string)
-    tags           = map(string)
-    taints         = list(object({
-      key    = string
-      value  = string
-      effect = string
-    }))
-  }))
-  default = {
+  description = "Configuration des node groups pour EKS"
+  type        = map(any)
+  default     = {
     general = {
       instance_type  = "t3.medium"
       instance_types = ["t3.medium"]
@@ -233,9 +216,13 @@ variable "node_groups" {
       max_size       = 4
       capacity_type  = "ON_DEMAND"
       disk_size      = 50
-      labels         = { role = "general" }
-      tags           = { NodeGroup = "general" }
-      taints         = []
+      labels = {
+        role = "general"
+      }
+      tags = {
+        NodeGroup = "general"
+      }
+      taints = []
     }
     spot = {
       instance_type  = "t3.medium"
@@ -245,9 +232,13 @@ variable "node_groups" {
       max_size       = 4
       capacity_type  = "SPOT"
       disk_size      = 50
-      labels         = { role = "spot" }
-      tags           = { NodeGroup = "spot" }
-      taints         = []
+      labels = {
+        role = "spot"
+      }
+      tags = {
+        NodeGroup = "spot"
+      }
+      taints = []
     }
   }
 }

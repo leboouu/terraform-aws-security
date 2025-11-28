@@ -151,3 +151,18 @@ variable "parameter_group_family" {
   description = "Famille du groupe de paramètres"
   type        = string
 }
+# Example of parameter definitions
+variable "db_parameters" {
+  default = [
+    {
+      name         = "max_connections"
+      value        = "100"
+      apply_method = "immediate"  # Dynamic parameter
+    },
+    {
+      name         = "shared_buffers"
+      value        = "256MB"
+      apply_method = "pending-reboot"  # Static parameter (requires reboot)
+    }
+  ]
+}

@@ -75,26 +75,23 @@ resource "aws_db_parameter_group" "main" {
 # ou supprimez complètement et configurez SSL au niveau de la connexion
 
 # Configuration minimale sans SSL forcé
-resource "aws_db_parameter_group" "main_minimal" {
-  name   = "${var.project_name}-${var.environment}-db-params-minimal"
+resource "aws_db_parameter_group" "main" {
+  name   = "secure-cloud-production-db-params"
   family = var.parameter_group_family
 
-  parameter {
-    name  = "log_statement"
-    value = "ddl"
+  # Separate dynamic and static parameters
+  dynamic "parameter" {
+    for_each = var.db_parameters
+    content {
+      name         = parameter.value.name
+      value        = parameter.value.value
+      apply_method = parameter.value.apply_method  # Use "immediate" for dynamic, "pending-reboot" for static
+    }
   }
 
-  parameter {
-    name  = "log_connections"
-    value = "1"
+  lifecycle {
+    create_before_destroy = true
   }
-
-  parameter {
-    name  = "log_disconnections"
-    value = "1"
-  }
-
-  tags = var.common_tags
 }
 
 locals {

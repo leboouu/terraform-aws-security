@@ -143,7 +143,7 @@ resource "aws_launch_template" "node_group" {
   name_prefix = "${aws_eks_cluster.main.name}-${each.key}-"
 
   image_id      = data.aws_ami.eks_worker.id
-  instance_type = each.value.instance_types[0]
+  #instance_type = each.value.instance_types[0]
 
   block_device_mappings {
     device_name = "/dev/xvda"

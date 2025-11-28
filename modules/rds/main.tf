@@ -22,58 +22,6 @@ resource "aws_db_subnet_group" "main" {
 # DB PARAMETER GROUP
 # ============================================================================
 
-resource "aws_db_parameter_group" "main" {
-  name   = "${var.project_name}-${var.environment}-db-params"
-  family = var.parameter_group_family
-
-  # ❌ NE PAS utiliser ces paramètres (non modifiables)
-  # parameter {
-  #   name  = "ssl"
-  #   value = "1"
-  # }
-
-  # ✅ Paramètres valides et modifiables
-  parameter {
-    name  = var.engine == "postgres" ? "ssl" : "rds.force_ssl"
-    value = "1"
-    apply_method = "pending-reboot"  # Important!
-  }
-
-  parameter {
-    name  = "log_statement"
-    value = "all"
-  }
-
-  parameter {
-    name  = "log_min_duration_statement"
-    value = "1000"
-  }
-
-  parameter {
-    name  = "shared_preload_libraries"
-    value = "pg_stat_statements"
-  }
-
-  parameter {
-    name  = "track_activity_query_size"
-    value = "2048"
-  }
-
-  parameter {
-    name  = "pg_stat_statements.track"
-    value = "all"
-  }
-
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  tags = var.common_tags
-}
-
-# Alternative: Si rds.force_ssl ne fonctionne pas, utilisez require_secure_transport (MySQL)
-# ou supprimez complètement et configurez SSL au niveau de la connexion
-
 # Configuration minimale sans SSL forcé
 resource "aws_db_parameter_group" "main" {
   name   = "secure-cloud-production-db-params"

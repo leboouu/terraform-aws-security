@@ -15,13 +15,8 @@ resource "aws_cloudtrail" "main" {
   cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail_cloudwatch[0].arn
 
   event_selector {
-  read_write_type           = "All"
-  include_management_events = true
-
-  data_resource {
-    type   = "AWS::S3::Object"
-    values = ["arn:aws:s3:::*/AWSLogs/*"]
-  }
+    read_write_type           = "All"
+    include_management_events = true
 }
 
   insight_selector {

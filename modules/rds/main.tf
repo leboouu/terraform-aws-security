@@ -23,18 +23,78 @@ resource "aws_db_subnet_group" "main" {
 # ============================================================================
 
 resource "aws_db_parameter_group" "main" {
-  name   = "${var.project_name}-${var.environment}-${var.engine}-params"
-  family = var.engine == "postgres" ? "postgres${split(".", var.engine_version)[0]}" : "mysql${split(".", var.engine_version)[0]}"
-  
-  dynamic "parameter" {
-    for_each = var.engine == "postgres" ? local.postgres_parameters : local.mysql_parameters
-    content {
-      name  = parameter.value.name
-      value = parameter.value.value
-    }
+  name   = "${var.project_name}-${var.environment}-postgres-params-v2"  # Nouveau nom
+  family = var.parameter_group_family
+
+  # ❌ NE PAS utiliser ces paramètres (non modifiables)
+  # parameter {
+  #   name  = "ssl"
+  #   value = "1"
+  # }
+
+  # ✅ Paramètres valides et modifiables
+  parameter {
+    name  = "rds.force_ssl"
+    value = "1"
+    apply_method = "pending-reboot"  # Important!
   }
-  
-  tags = var.common_tags
+
+  parameter {
+    name  = "log_statement"
+    value = "all"
+  }
+
+  parameter {
+    name  = "log_min_duration_statement"
+    value = "1000"
+  }
+
+  parameter {
+    name  = "shared_preload_libraries"
+    value = "pg_stat_statements"
+  }
+
+  parameter {
+    name  = "track_activity_query_size"
+    value = "2048"
+  }
+
+  parameter {
+    name  = "pg_stat_statements.track"
+    value = "all"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = var.tags
+}
+
+# Alternative: Si rds.force_ssl ne fonctionne pas, utilisez require_secure_transport (MySQL)
+# ou supprimez complètement et configurez SSL au niveau de la connexion
+
+# Configuration minimale sans SSL forcé
+resource "aws_db_parameter_group" "main_minimal" {
+  name   = "${var.project_name}-${var.environment}-postgres-params"
+  family = var.parameter_group_family
+
+  parameter {
+    name  = "log_statement"
+    value = "ddl"
+  }
+
+  parameter {
+    name  = "log_connections"
+    value = "1"
+  }
+
+  parameter {
+    name  = "log_disconnections"
+    value = "1"
+  }
+
+  tags = var.tags
 }
 
 locals {

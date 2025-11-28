@@ -18,7 +18,7 @@ terraform {
     #   --attribute-definitions AttributeName=LockID,AttributeType=S \
     #   --key-schema AttributeName=LockID,KeyType=HASH \
     #   --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
-    dynamodb_table = "terraform-state-lock"
+    #dynamodb_table = "terraform-state-lock"
     
     # Options additionnelles
     skip_credentials_validation = false

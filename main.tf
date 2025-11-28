@@ -95,43 +95,41 @@ module "eks" {
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnet_ids
 
-  #node_groups = {
-    #general = {
-   #   name           = "general"
-  #    instance_types = var.eks_node_instance_types
- #     capacity_type  = var.eks_enable_spot_instances ? "SPOT" : "ON_DEMAND"
-#
-    #  desired_size = var.eks_node_desired_size
-   #   min_size     = var.eks_node_min_size
-  #    max_size     = var.eks_node_max_size
- #     disk_size    = var.eks_node_disk_size
-#
-    #  labels = {
-   #     role        = "general"
-  #      environment = var.environment
- #     }
-#
- #     taints = []
-#
-      #tags = {
-     #   NodeGroup = "general"
-    #  }
-   # }
-  #}
   node_groups = {
     general = {
-      instance_type = "t3.medium"
-      desired_size  = 2
-      min_size      = 1
-      max_size      = 4
+      instance_type  = "t3.medium"
+      instance_types = ["t3.medium"]
+      desired_size   = 2
+      min_size       = 1
+      max_size       = 4
+      capacity_type  = "ON_DEMAND"
+      disk_size      = 50
+      labels         = {
+        role = "general"
+      }
+      tags = {
+        NodeGroup = "general"
+      }
+      taints = []
     }
     spot = {
-      instance_type = "t3.medium"
-      desired_size  = 2
-      min_size      = 1
-      max_size      = 4
+      instance_type  = "t3.medium"
+      instance_types = ["t3.medium"]
+      desired_size   = 2
+      min_size       = 1
+      max_size       = 4
+      capacity_type  = "SPOT"
+      disk_size      = 50
+      labels         = {
+        role = "spot"
+      }
+      tags = {
+        NodeGroup = "spot"
+      }
+      taints = []
     }
   }
+
   cluster_log_types              = var.eks_cluster_log_types
   enable_irsa                    = var.eks_enable_irsa
   enable_cluster_encryption      = var.eks_enable_encryption

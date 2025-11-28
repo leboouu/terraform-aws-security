@@ -210,20 +210,46 @@ variable "node_groups" {
   description = "Map of EKS node group configurations"
   type = map(object({
     instance_type  = string
-    instance_types = optional(list(string))
+    instance_types = list(string)
     desired_size   = number
     min_size       = number
     max_size       = number
-    capacity_type  = optional(string, "ON_DEMAND")
-    disk_size      = optional(number, 50)
-    labels         = optional(map(string), {})
-    tags           = optional(map(string), {})
-    taints         = optional(list(object({
+    capacity_type  = string
+    disk_size      = number
+    labels         = map(string)
+    tags           = map(string)
+    taints         = list(object({
       key    = string
       value  = string
       effect = string
-    })), [])
+    }))
   }))
+  default = {
+    general = {
+      instance_type  = "t3.medium"
+      instance_types = ["t3.medium"]
+      desired_size   = 2
+      min_size       = 1
+      max_size       = 4
+      capacity_type  = "ON_DEMAND"
+      disk_size      = 50
+      labels         = { role = "general" }
+      tags           = { NodeGroup = "general" }
+      taints         = []
+    }
+    spot = {
+      instance_type  = "t3.medium"
+      instance_types = ["t3.medium"]
+      desired_size   = 2
+      min_size       = 1
+      max_size       = 4
+      capacity_type  = "SPOT"
+      disk_size      = 50
+      labels         = { role = "spot" }
+      tags           = { NodeGroup = "spot" }
+      taints         = []
+    }
+  }
 }
 
 # ============================================================================

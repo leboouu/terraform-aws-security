@@ -1,7 +1,6 @@
-# TODO for RDS Module Corrections
+# TODO for Terraform Errors Fixes
 
-- [x] Add missing variables 'parameter_group_family' and 'tags' to modules/rds/variables.tf
-- [x] Change parameter group names to be generic (remove '-postgres-')
-- [x] Make SSL parameter dynamic based on engine (ssl for postgres, rds.force_ssl for mysql)
-- [x] Change all parameter group tags to use var.common_tags for consistency
-- [x] Run terraform validate to check for errors
+- [x] Fix RDS Parameter Group name conflict: Changed hardcoded name to dynamic `${var.project_name}-${var.environment}-db-params`
+- [x] Fix EKS Add-on recreation: Removed `preserve = true` from EBS CSI driver to avoid purging configurations
+- [x] Fix EKS Node Group failure: Added dependencies on cluster and add-ons to ensure cluster readiness before node group creation
+- [ ] Run terraform apply to verify fixes

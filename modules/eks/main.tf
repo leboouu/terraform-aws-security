@@ -114,7 +114,11 @@ resource "aws_eks_node_group" "main" {
     aws_iam_role_policy_attachment.node_group_AmazonEKSWorkerNodePolicy,
     aws_iam_role_policy_attachment.node_group_AmazonEKS_CNI_Policy,
     aws_iam_role_policy_attachment.node_group_AmazonEC2ContainerRegistryReadOnly,
-    aws_iam_role_policy_attachment.node_group_AmazonSSMManagedInstanceCore
+    aws_iam_role_policy_attachment.node_group_AmazonSSMManagedInstanceCore,
+    aws_eks_cluster.main,
+    aws_eks_addon.vpc_cni,
+    aws_eks_addon.coredns,
+    aws_eks_addon.kube_proxy
   ]
 
   lifecycle {
@@ -242,8 +246,6 @@ resource "aws_eks_addon" "kube_proxy" {
 resource "aws_eks_addon" "ebs_csi_driver" {
   cluster_name                = aws_eks_cluster.main.name
   addon_name                  = "aws-ebs-csi-driver"
-
-  preserve = true
 
   addon_version               = var.ebs_csi_driver_addon_version
   service_account_role_arn    = aws_iam_role.ebs_csi_driver.arn

@@ -24,7 +24,7 @@ resource "aws_db_subnet_group" "main" {
 
 # Configuration minimale sans SSL forcé
 resource "aws_db_parameter_group" "main" {
-  name   = "secure-cloud-production-db-params"
+  name   = "${var.project_name}-${var.environment}-db-params"
   family = var.parameter_group_family
 
   # Separate dynamic and static parameters

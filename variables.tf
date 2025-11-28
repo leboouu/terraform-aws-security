@@ -205,24 +205,25 @@ variable "eks_cluster_log_types" {
 }
 
 # In terraform.tfvars or wherever you define node_groups
+# In modules/eks/variables.tf around line 31
 variable "node_groups" {
-  description = "Map of node group configurations. You can override in terraform.tfvars."
-  type        = map(any)
-  default = {
-    general = {
-      instance_type = "t3.medium"
-      desired_size  = 2
-      min_size      = 1
-      max_size      = 4
-    }
-    spot = {
-      instance_type = "t3.medium"  # Adjust to match your actual spot instances
-      desired_size  = 2            # Adjust to match your actual configuration
-      min_size      = 1
-      max_size      = 4
-      capacity_type = "SPOT"       # If your module supports this
-    }
-  }
+  description = "Map of EKS node group configurations"
+  type = map(object({
+    instance_type  = string
+    instance_types = optional(list(string))
+    desired_size   = number
+    min_size       = number
+    max_size       = number
+    capacity_type  = optional(string, "ON_DEMAND")
+    disk_size      = optional(number, 50)
+    labels         = optional(map(string), {})
+    tags           = optional(map(string), {})
+    taints         = optional(list(object({
+      key    = string
+      value  = string
+      effect = string
+    })), [])
+  }))
 }
 
 # ============================================================================

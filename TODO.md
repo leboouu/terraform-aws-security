@@ -4,4 +4,4 @@
 - [x] Change parameter group names to be generic (remove '-postgres-')
 - [x] Make SSL parameter dynamic based on engine (ssl for postgres, rds.force_ssl for mysql)
 - [x] Change all parameter group tags to use var.common_tags for consistency
-- [ ] Run terraform validate to check for errors
+- [x] Run terraform validate to check for errors

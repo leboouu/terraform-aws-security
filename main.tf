@@ -172,6 +172,7 @@ module "rds" {
 
   engine                = var.rds_engine
   engine_version        = var.rds_engine_version
+  parameter_group_family = var.rds_engine == "postgres" ? "postgres${split(".", var.rds_engine_version)[0]}" : "mysql${split(".", var.rds_engine_version)[0]}.${split(".", var.rds_engine_version)[1]}"
   instance_class        = var.rds_instance_class
   allocated_storage     = var.rds_allocated_storage
   max_allocated_storage = var.rds_max_allocated_storage

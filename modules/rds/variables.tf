@@ -140,3 +140,14 @@ variable "common_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "tags" {
+  description = "Tags supplémentaires"
+  type        = map(string)
+  default     = {}
+}
+
+variable "parameter_group_family" {
+  description = "Famille du groupe de paramètres"
+  type        = string
+}

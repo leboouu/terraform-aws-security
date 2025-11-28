@@ -23,7 +23,7 @@ resource "aws_db_subnet_group" "main" {
 # ============================================================================
 
 resource "aws_db_parameter_group" "main" {
-  name   = "${var.project_name}-${var.environment}-postgres-params-v2"  # Nouveau nom
+  name   = "${var.project_name}-${var.environment}-db-params"
   family = var.parameter_group_family
 
   # ❌ NE PAS utiliser ces paramètres (non modifiables)
@@ -34,7 +34,7 @@ resource "aws_db_parameter_group" "main" {
 
   # ✅ Paramètres valides et modifiables
   parameter {
-    name  = "rds.force_ssl"
+    name  = var.engine == "postgres" ? "ssl" : "rds.force_ssl"
     value = "1"
     apply_method = "pending-reboot"  # Important!
   }
@@ -68,7 +68,7 @@ resource "aws_db_parameter_group" "main" {
     create_before_destroy = true
   }
 
-  tags = var.tags
+  tags = var.common_tags
 }
 
 # Alternative: Si rds.force_ssl ne fonctionne pas, utilisez require_secure_transport (MySQL)
@@ -76,7 +76,7 @@ resource "aws_db_parameter_group" "main" {
 
 # Configuration minimale sans SSL forcé
 resource "aws_db_parameter_group" "main_minimal" {
-  name   = "${var.project_name}-${var.environment}-postgres-params"
+  name   = "${var.project_name}-${var.environment}-db-params-minimal"
   family = var.parameter_group_family
 
   parameter {
@@ -94,7 +94,7 @@ resource "aws_db_parameter_group" "main_minimal" {
     value = "1"
   }
 
-  tags = var.tags
+  tags = var.common_tags
 }
 
 locals {

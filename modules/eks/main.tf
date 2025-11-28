@@ -78,7 +78,7 @@ resource "aws_eks_node_group" "main" {
 
   instance_types = each.value.instance_types
   capacity_type  = each.value.capacity_type
-  disk_size      = try(each.value.disk_size, 20)
+  
 
   labels = merge(
     each.value.labels,
@@ -127,19 +127,32 @@ resource "aws_eks_node_group" "main" {
 # LAUNCH TEMPLATE POUR NODE GROUPS
 # ============================================================================
 
+data "aws_ami" "eks_worker" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amazon-eks-node-${var.cluster_version}-*"]
+  }
+}
+
 resource "aws_launch_template" "node_group" {
   for_each = var.node_groups
-  
+
   name_prefix = "${aws_eks_cluster.main.name}-${each.key}-"
-  
+
+  image_id      = data.aws_ami.eks_worker.id
+  instance_type = each.value.instance_types[0]
+
   block_device_mappings {
     device_name = "/dev/xvda"
-    
+
     ebs {
-      volume_size = try(each.value.disk_size, 20)  # ICI
-      volume_type = "gp3"
+      volume_size           = 50
+      volume_type           = "gp3"
       delete_on_termination = true
-      encrypted = true
+      encrypted             = true
     }
   }
 }
@@ -226,19 +239,19 @@ resource "aws_eks_addon" "kube_proxy" {
   tags = var.common_tags
 }
 
-# resource "aws_eks_addon" "ebs_csi_driver" {
-#   cluster_name                = aws_eks_cluster.main.name
-#   addon_name                  = "aws-ebs-csi-driver"
-# 
-#   preserve = true
-# 
-#   addon_version               = var.ebs_csi_driver_addon_version
-#   service_account_role_arn    = aws_iam_role.ebs_csi_driver.arn
-#   resolve_conflicts_on_create = "OVERWRITE"
-#   resolve_conflicts_on_update = "PRESERVE"
-# 
-#   tags = var.common_tags
-# }
+resource "aws_eks_addon" "ebs_csi_driver" {
+  cluster_name                = aws_eks_cluster.main.name
+  addon_name                  = "aws-ebs-csi-driver"
+
+  preserve = true
+
+  addon_version               = var.ebs_csi_driver_addon_version
+  service_account_role_arn    = aws_iam_role.ebs_csi_driver.arn
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "PRESERVE"
+
+  tags = var.common_tags
+}
 
 # ============================================================================
 # CLUSTER AUTOSCALER (OPTIONNEL)

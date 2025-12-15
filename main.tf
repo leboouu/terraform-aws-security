@@ -95,40 +95,7 @@ module "eks" {
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnet_ids
 
-  node_groups = {
-    general = {
-      instance_type  = "t3.medium"
-      instance_types = ["t3.medium"]
-      desired_size   = 2
-      min_size       = 1
-      max_size       = 4
-      capacity_type  = "ON_DEMAND"
-      disk_size      = 50
-      labels         = {
-        role = "general"
-      }
-      tags = {
-        NodeGroup = "general"
-      }
-      taints = []
-    }
-    spot = {
-      instance_type  = "t3.medium"
-      instance_types = ["t3.medium"]
-      desired_size   = 2
-      min_size       = 1
-      max_size       = 4
-      capacity_type  = "SPOT"
-      disk_size      = 50
-      labels         = {
-        role = "spot"
-      }
-      tags = {
-        NodeGroup = "spot"
-      }
-      taints = []
-    }
-  }
+  node_groups = var.node_groups  # Just reference the variable instead of defining it here
 
   cluster_log_types              = var.eks_cluster_log_types
   enable_irsa                    = var.eks_enable_irsa
